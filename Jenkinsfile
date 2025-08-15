@@ -1,5 +1,8 @@
 pipeline {
     agent any
+     tools {
+        maven 'Maven3'  // This matches the name you set in Jenkins
+    }
     stages {
         stage('Checkout') {
             steps {
