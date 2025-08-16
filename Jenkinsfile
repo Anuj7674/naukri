@@ -1,21 +1,60 @@
 pipeline {
     agent any
-     tools {
-        maven 'Maven3'  // This matches the name you set in Jenkins
+
+    environment {
+        GIT_REPO = 'https://github.com/Anuj7674/naukri.git'
+        BRANCH = 'main' // replace with your branch if needed
     }
+
+    triggers {
+        cron('0 7 * * *') // Runs every day at 7:00 AM
+    }
+
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/Anuj7674/naukri'
+                // Clean workspace and checkout code
+                deleteDir()
+                git branch: "${BRANCH}", url: "${GIT_REPO}"
             }
         }
-        stage('Build & Run Tests') {
+
+        stage('Build') {
             steps {
-                bat 'mvn clean test -DsuiteXmlFile=testng.xml'
+                // Compile project
+                sh 'mvn clean compile'
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                // Execute TestNG tests
+                sh 'mvn test -DsuiteXmlFile=testng.xml'
+            }
+        }
+
+        stage('Archive Reports') {
+            steps {
+                // Archive and publish TestNG reports
+                archiveArtifacts artifacts: '**/target/surefire-reports/*.html', allowEmptyArchive: true
+                publishHTML(target: [
+                    allowMissing: true,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: 'target/surefire-reports',
+                    reportFiles: 'index.html',
+                    reportName: 'TestNG Report'
+                ])
             }
         }
     }
-    triggers {
-        cron('0 7 * * *') // Runs every day at 7:00 AM
+
+    post {
+        success {
+            echo '✅ Build and Tests Passed!'
+        }
+        failure {
+            echo '❌ Build or Tests Failed!'
+        }
     }
 }
