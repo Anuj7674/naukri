@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         GIT_REPO = 'https://github.com/Anuj7674/naukri.git'
-        BRANCH = 'main' // replace with your branch if needed
+        BRANCH = 'master' // replace with your branch if needed
     }
 
     triggers {
